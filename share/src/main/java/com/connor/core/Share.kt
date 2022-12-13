@@ -20,9 +20,9 @@ internal val stickyEventFlow =
 
 internal var scope = ShareScope()
 
-fun emitEvent(event: Any, tag: String, isSticky: Boolean = false, timeMillis: Long = 0) =
+fun emitEvent(event: Any, tag: String, isSticky: Boolean = false, timeMillis: Long? = null) =
     scope.launch {
-        delay(timeMillis)
+        timeMillis?.let { delay(it) }
         if (isSticky) stickyEventFlow.emit(ShareEvent(event, tag))
         else eventFlow.emit(ShareEvent(event, tag))
     }
