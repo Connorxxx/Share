@@ -4,7 +4,10 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.connor.core.sendEvent
+import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import com.connor.core.lifecycleReceiveEvent
+import com.connor.core.emitEvent
 import com.connor.share.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -14,10 +17,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        lifecycleReceiveEvent<String>("receive") {
+            binding.tvMainRec.text = it
+            Log.d("ActivityMainBinding", "onCreate: $it")
+        }
         binding.btnShare.setOnClickListener {
-            sendEvent("String", "sendSticky", true)
+            emitEvent("String", "sendSticky", true)
             startActivity<ReceiveActivity>(this) {}
         }
+        binding.btnEvent.setOnClickListener {
+            emitEvent("By Self", "receive", timeMillis = 3000)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("ActivityMainBinding", "onStop: ")
     }
 
     inline fun <reified T> startActivity(context: Context, block: Intent.() -> Unit) {

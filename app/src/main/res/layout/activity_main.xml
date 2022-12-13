@@ -21,5 +21,22 @@
             android:text="@string/app_name"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_main_rec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="@+id/btn_share"
+            app:layout_constraintTop_toBottomOf="@+id/btn_share" />
+
+        <Button
+            android:id="@+id/btn_event"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Send Self"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_share"
+            app:layout_constraintStart_toEndOf="@+id/btn_share" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

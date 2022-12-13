@@ -2,10 +2,7 @@ package com.connor.core
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 @PublishedApi
@@ -19,7 +16,7 @@ internal open class ShareScope() : CoroutineScope {
         lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onDestroy(owner: LifecycleOwner) {
                 super.onDestroy(owner)
-                cancel()
+                if (isActive) cancel()
             }
         })
     }

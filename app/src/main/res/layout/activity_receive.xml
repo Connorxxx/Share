@@ -22,5 +22,14 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/app_name"/>
 
+        <Button
+            android:id="@+id/btn_send_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Send"
+            app:layout_constraintStart_toStartOf="@+id/tv_receive"
+            app:layout_constraintTop_toBottomOf="@+id/tv_receive" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
