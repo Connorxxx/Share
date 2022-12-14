@@ -27,6 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            tools:text="@string/app_name"
             app:layout_constraintStart_toStartOf="@+id/btn_share"
             app:layout_constraintTop_toBottomOf="@+id/btn_share" />
 
@@ -38,5 +39,15 @@
             android:text="Send Self"
             app:layout_constraintBottom_toBottomOf="@+id/btn_share"
             app:layout_constraintStart_toEndOf="@+id/btn_share" />
+
+        <Button
+            android:id="@+id/btn_vm_sen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Sen VM"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_event"
+            app:layout_constraintStart_toEndOf="@+id/btn_event"
+            app:layout_constraintTop_toTopOf="@+id/btn_event" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

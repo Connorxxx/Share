@@ -1,8 +1,6 @@
 package com.connor.core
 
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -58,6 +56,35 @@ inline fun <reified T> receiveEvent(
     dispatchers: CoroutineContext = Dispatchers.Main,
     crossinline block: suspend CoroutineScope.(event: T) -> Unit
 ) = ShareScope().launch {
+    launch(dispatchers) {
+        stickyEventFlow.collect {
+            if (it.event is T && tags.contains(it.tag)) {
+                block(it.event)
+            }
+        }
+    }
+    launch(dispatchers) {
+        eventFlow.collect {
+            if (it.event is T && tags.contains(it.tag)) {
+                block(it.event)
+            }
+        }
+    }
+}
+
+fun ViewModel.emitEvent(event: Any, tag: String, isSticky: Boolean = false, timeMillis: Long? = null) {
+    viewModelScope.launch {
+        timeMillis?.let { delay(it) }
+        if (isSticky) stickyEventFlow.emit(ShareEvent(event, tag))
+        else eventFlow.emit(ShareEvent(event, tag))
+    }
+}
+
+inline fun <reified T> ViewModel.receiveEvent(
+    vararg tags: String = emptyArray(),
+    dispatchers: CoroutineContext = Dispatchers.Main,
+    crossinline block: suspend CoroutineScope.(event: T) -> Unit
+) = viewModelScope.launch {
     launch(dispatchers) {
         stickyEventFlow.collect {
             if (it.event is T && tags.contains(it.tag)) {
