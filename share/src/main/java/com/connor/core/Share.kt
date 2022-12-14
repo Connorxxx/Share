@@ -1,12 +1,8 @@
 package com.connor.core
 
 import androidx.lifecycle.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 @PublishedApi
@@ -18,6 +14,9 @@ internal val stickyEventFlow =
 
 internal var scope = ShareScope()
 
+/**
+ * 发送事件
+ */
 fun emitEvent(event: Any, tag: String, isSticky: Boolean = false, timeMillis: Long? = null) =
     scope.launch {
         timeMillis?.let { delay(it) }
@@ -25,20 +24,61 @@ fun emitEvent(event: Any, tag: String, isSticky: Boolean = false, timeMillis: Lo
         else eventFlow.emit(ShareEvent(event, tag))
     }
 
-inline fun <reified T> LifecycleOwner.lifecycleReceiveEvent(
+/**
+ * 非 lifecycle 接收事件，需要手动取消
+ */
+inline fun <reified T> receiveEvent(
     vararg tags: String = emptyArray(),
-    dispatchers: CoroutineContext = Dispatchers.Main,
+    dispatchers: CoroutineContext = Dispatchers.Main.immediate,
     crossinline block: suspend CoroutineScope.(event: T) -> Unit
-) = ShareScope(this).launch {
+) = ShareScope().launch(dispatchers) {
+    launch {
+        stickyEventFlow.collect {
+            if (it.event is T && tags.contains(it.tag)) {
+                block(it.event)
+            }
+        }
+    }
+    launch {
+        eventFlow.collect {
+            if (it.event is T && tags.contains(it.tag)) {
+                block(it.event)
+            }
+        }
+    }
+}
+
+/**
+ * lifecycle 发送事件
+ */
+fun LifecycleOwner.emitEvent(
+    event: Any,
+    tag: String,
+    isSticky: Boolean = false,
+    timeMillis: Long? = null
+) = lifecycleScope.launch {
+    timeMillis?.let { delay(it) }
+    if (isSticky) stickyEventFlow.emit(ShareEvent(event, tag))
+    else eventFlow.emit(ShareEvent(event, tag))
+}
+
+/**
+ * lifecycle 接收事件
+ */
+inline fun <reified T> LifecycleOwner.receiveEvent(
+    vararg tags: String = emptyArray(),
+    dispatchers: CoroutineContext = Dispatchers.Main.immediate,
+    crossinline block: suspend CoroutineScope.(event: T) -> Unit
+) = lifecycleScope.launch(dispatchers) {
     lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-        launch(dispatchers) {
+        launch {
             stickyEventFlow.collect {
                 if (it.event is T && tags.contains(it.tag)) {
                     block(it.event)
                 }
             }
         }
-        launch(dispatchers) {
+        launch {
             eventFlow.collect {
                 if (it.event is T && tags.contains(it.tag)) {
                     block(it.event)
@@ -49,50 +89,36 @@ inline fun <reified T> LifecycleOwner.lifecycleReceiveEvent(
 }
 
 /**
- * 需要手动取消协程，推荐使用 lifecycleReceiveEvent
+ * viewModel 发送事件
  */
-inline fun <reified T> receiveEvent(
-    vararg tags: String = emptyArray(),
-    dispatchers: CoroutineContext = Dispatchers.Main,
-    crossinline block: suspend CoroutineScope.(event: T) -> Unit
-) = ShareScope().launch {
-    launch(dispatchers) {
-        stickyEventFlow.collect {
-            if (it.event is T && tags.contains(it.tag)) {
-                block(it.event)
-            }
-        }
-    }
-    launch(dispatchers) {
-        eventFlow.collect {
-            if (it.event is T && tags.contains(it.tag)) {
-                block(it.event)
-            }
-        }
-    }
+fun ViewModel.emitEvent(
+    event: Any,
+    tag: String,
+    isSticky: Boolean = false,
+    timeMillis: Long? = null
+) = viewModelScope.launch {
+    timeMillis?.let { delay(it) }
+    if (isSticky) stickyEventFlow.emit(ShareEvent(event, tag))
+    else eventFlow.emit(ShareEvent(event, tag))
 }
 
-fun ViewModel.emitEvent(event: Any, tag: String, isSticky: Boolean = false, timeMillis: Long? = null) {
-    viewModelScope.launch {
-        timeMillis?.let { delay(it) }
-        if (isSticky) stickyEventFlow.emit(ShareEvent(event, tag))
-        else eventFlow.emit(ShareEvent(event, tag))
-    }
-}
 
+/**
+ * viewModel 接收事件
+ */
 inline fun <reified T> ViewModel.receiveEvent(
     vararg tags: String = emptyArray(),
-    dispatchers: CoroutineContext = Dispatchers.Main,
+    dispatchers: CoroutineContext = Dispatchers.Main.immediate,
     crossinline block: suspend CoroutineScope.(event: T) -> Unit
-) = viewModelScope.launch {
-    launch(dispatchers) {
+) = viewModelScope.launch(dispatchers) {
+    launch {
         stickyEventFlow.collect {
             if (it.event is T && tags.contains(it.tag)) {
                 block(it.event)
             }
         }
     }
-    launch(dispatchers) {
+    launch {
         eventFlow.collect {
             if (it.event is T && tags.contains(it.tag)) {
                 block(it.event)

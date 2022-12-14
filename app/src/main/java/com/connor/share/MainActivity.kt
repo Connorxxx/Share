@@ -2,12 +2,10 @@ package com.connor.share
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
-import com.connor.core.lifecycleReceiveEvent
+import androidx.appcompat.app.AppCompatActivity
 import com.connor.core.emitEvent
 import com.connor.core.receiveEvent
 import com.connor.share.databinding.ActivityMainBinding
@@ -20,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        lifecycleReceiveEvent<String>("receive") {
+        receiveEvent<String>("receive") {
             binding.tvMainRec.text = it
             Log.d("ActivityMainBinding", "onCreate: $it")
         }
